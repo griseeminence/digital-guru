@@ -38,12 +38,18 @@ class Item(models.Model):
         # что к product будет добавлен slug, который мы и передаем в kwargs.
         # соответственно, прямо в шаблоне могу вызывать экземпляры модели через этот метод.
 
+    def get_add_to_cart_url(self):
+        return reverse('core:add-to-cart', kwargs={
+            'slug': self.slug,
+        })
+
 
 class OrderItem(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    quantity = models.IntegerField(default=1)
 
     def __str__(self):
-        return self.title
+        return f'{self.item.title} x {self.quantity}'
 
 
 class Order(models.Model):

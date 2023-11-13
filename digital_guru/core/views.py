@@ -9,7 +9,7 @@ from .models import Item, OrderItem, Order
 
 class HomeListView(ListView):
     model = Item
-    template_name = 'home.html'
+    template_name = 'core/home.html'
 
 
 class ItemDetailView(DetailView):

@@ -14,7 +14,7 @@ class HomeListView(ListView):
 
 class ItemDetailView(DetailView):
     model = Item
-    template_name = 'product_detail.html'
+    template_name = 'core/detail.html'
 
 
 def products(request):
@@ -25,7 +25,7 @@ def products(request):
 
 
 def checkout(request):
-    return render(request, 'checkout.html')
+    return render(request, 'core/checkout.html')
 
 
 def add_to_cart(request, slug):

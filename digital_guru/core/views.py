@@ -38,17 +38,17 @@ def add_to_cart(request, slug):
             order_item.quantity += 1
             order_item.save()
             messages.info(request, f'{item.title} quantity increased to {order_item.quantity}')
-            return redirect('core:products', slug=slug)
+            return redirect('core:detail', slug=slug)
         else:
             order.items.add(order_item)
             messages.info(request, f'{item.title} was added to your cart')
-            return redirect('core:products', slug=slug)
+            return redirect('core:detail', slug=slug)
     else:
         ordered_date = timezone.now()
         order = Order.objects.create(user=request.user, ordered_date=ordered_date)
         order.items.add(order_item)
         messages.info(request, f'{item.title} was added to your cart')
-        return redirect('core:products', slug=slug)
+        return redirect('core:detail', slug=slug)
 
 
 def remove_from_cart(request, slug):
@@ -64,10 +64,10 @@ def remove_from_cart(request, slug):
             )[0]
             order.items.remove(order_item)
             messages.info(request, f'{item.title} was removed from your cart')
-            return redirect('core:products', slug=slug)
+            return redirect('core:detail', slug=slug)
         else:
             messages.info(request, f'{item.title} was not in your cart')
-            return redirect('core:products', slug=slug)
+            return redirect('core:detail', slug=slug)
     else:
         messages.info(request, f'You do not have an active order')
-        return redirect('core:products', slug=slug)
+        return redirect('core:detail', slug=slug)

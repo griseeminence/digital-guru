@@ -171,7 +171,7 @@
             data-mdb-ripple-color="light">
             <img src="https://mdbootstrap.com/img/Photos/Horizontal/E-commerce/Vertical/12.jpg"
               class="w-100" />
-            <a href="#!">
+            <a href="{{ item.get_absolute_url }}">
               <div class="mask">
                 <div class="d-flex justify-content-start align-items-end h-100">
                   <h5><span class="badge bg-dark ms-2">NEW</span></h5>
@@ -183,13 +183,21 @@
             </a>
           </div>
           <div class="card-body">
-            <a href="" class="text-reset">
+            <a href="{{ item.get_absolute_url }}" class="text-reset">
               <h5 class="card-title mb-2">{{ item.title }}</h5>
             </a>
             <a href="" class="text-reset ">
               <p>{{ item.get_categort_display }}</p>
             </a>
-            <h6 class="mb-3 price">${{ item.price }}</h6>
+            <h6 class="mb-3 price">
+              <strong>$
+                {% if item.discount_price %}
+                  {{ item.discount_price }}
+                {% else %}
+                  {{ item.price }}
+                {% endif %}
+              </strong>
+            </h6>
           </div>
         </div>
       </div>

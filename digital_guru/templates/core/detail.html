@@ -19,27 +19,30 @@
                 <div class="p-4">
                     <div class="mb-3">
                         <a href="">
-                            <span class="badge bg-dark me-1">Category 2</span>
-                        </a>
-                        <a href="">
-                            <span class="badge bg-info me-1">New</span>
-                        </a>
-                        <a href="">
-                            <span class="badge bg-danger me-1">Bestseller</span>
+                            <span class="badge bg-dark me-1">{{ object.get_category_display }}</span>
                         </a>
                     </div>
 
                     <p class="lead">
-                        <span class="me-1">
-                            <del>$200</del>
+                        {% if object.discount_price %}
+                        <span class="mr-1">
+                            <del>${{ object.price }}</del>
                         </span>
-                        <span>$100</span>
+                        <span class="mr-1">
+                            ${{ object.discount_price }}
+                        </span>
+                        {% else %}
+                            <span>
+                                ${{ object.price }}
+                            </span>
+                        {% endif %}
                     </p>
 
                     <strong><p style="font-size: 20px;">Description</p></strong>
 
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Et dolor suscipit libero eos atque quia ipsa sint voluptatibus! Beatae sit assumenda asperiores iure at maxime atque repellendus maiores quia sapiente.</p>
+                    <p>{{ object.description }}</p>
 
+                    {% comment %}
                     <form class="d-flex justify-content-left">
                         <!-- Default input -->
                         <div class="form-outline me-1" style="width: 100px;">
@@ -50,6 +53,17 @@
                             <i class="fas fa-shopping-cart ms-1"></i>
                         </button>
                     </form>
+                    {% endcomment %}
+
+                        <a href="{{ object.get_add_to_cart_url }}" class="btn btn-primary ms-1">
+                            Add to cart
+                            <i class="fas fa-shopping-cart ms-1"></i>
+                        </a>
+                        <a href="{{ object.get_remove_from_cart_url }}" class="btn btn-danger btn-md my-0 p">
+                            Remove from cart
+                        </a>
+
+
                 </div>
                 <!--Content-->
             </div>

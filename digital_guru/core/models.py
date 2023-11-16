@@ -32,7 +32,7 @@ class Item(models.Model):
         return self.title
 
     def get_absolute_url(self):
-        return reverse('core:product', kwargs={
+        return reverse('core:detail', kwargs={
             'slug': self.slug,
         })  # product - name для ItemDetailView из core/urls.py,
         # reverse формирует url как 'product/' а дальше ожидает (исходя из url)

@@ -26,44 +26,55 @@
           loading="lazy"
         />
       </a>
+
       <!-- Left links -->
+      <!-- Отредактировать навбар под себя позже -->
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        {% comment %}
         <li class="nav-item active">
-          <a class="nav-link " href="https://mdbootstrap.com/">Home</a>
+          <a class="nav-link " href="">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="https://mdbootstrap.com/docs/standard/">About MDB</a>
+          <a class="nav-link" href="">About</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="https://mdbootstrap.com/docs/standard/getting-started/installation/">Free download</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="https://mdbootstrap.com/education/bootstrap/">Free tutorials</a>
-        </li>
+        {% endcomment %}
       </ul>
       <!-- Left links -->
+
     </div>
     <!-- Collapsible wrapper -->
 
     <!-- Right elements -->
+    {% if request.user.is_authenticated %}
     <div class="d-flex align-items-center">
       <!-- Icon -->
       <a class="nav-link me-3" href="#">
         <i class="fas fa-shopping-cart"></i>
         <span class="badge rounded-pill badge-notification bg-danger">1</span>
       </a>
-
       <a class="nav-link me-3" href="#">
         <i class="fab fa-facebook-f"></i>
       </a>
       <a class="nav-link me-3" href="#">
         <i class="fab fa-twitter"></i>
       </a>
-      <a href="https://github.com/mdbootstrap/bootstrap-material-design" class="border rounded px-2 nav-link"
-              target="_blank">
-              <i class="fab fa-github me-2"></i>MDB GitHub
-            </a>
+      <a href="{% url 'account_logout' %}" class="border rounded px-2 nav-link"
+        target="_blank">
+        <i class="fab fa-github me-2"></i>Logout
+      </a>
     </div>
+    {% else %}
+    <div class="d-flex align-items-center">
+      <a href="{% url 'account_login' %}" class="border rounded px-2 nav-link"
+        target="_blank">
+        <i class="fab fa-github me-2"></i>Login
+      </a>
+      <a href="{% url 'account_signup' %}" class="border rounded px-2 nav-link"
+        target="_blank">
+        <i class="fab fa-github me-2"></i>Signup
+      </a>
+    </div>
+    {% endif %}
     <!-- Right elements -->
 
   </div>

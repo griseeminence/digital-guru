@@ -55,17 +55,17 @@ def add_to_cart(request, slug):
             order_item.quantity += 1
             order_item.save()
             messages.info(request, f'{item.title} quantity increased to {order_item.quantity}')
-            return redirect('core:detail', slug=slug)
+            return redirect('core:order-summary')
         else:
             order.items.add(order_item)
             messages.info(request, f'{item.title} was added to your cart')
-            return redirect('core:detail', slug=slug)
+            return redirect('core:order-summary')
     else:
         ordered_date = timezone.now()
         order = Order.objects.create(user=request.user, ordered_date=ordered_date)
         order.items.add(order_item)
         messages.info(request, f'{item.title} was added to your cart')
-        return redirect('core:detail', slug=slug)
+        return redirect('core:order-summary')
 
 
 @login_required # Не работает редирект для анонима. Исправить страницы авторизации?
@@ -82,7 +82,34 @@ def remove_from_cart(request, slug):
             )[0]
             order.items.remove(order_item)
             messages.info(request, f'{item.title} was removed from your cart')
+            return redirect('order-summary')
+        else:
+            messages.info(request, f'{item.title} was not in your cart')
             return redirect('core:detail', slug=slug)
+    else:
+        messages.info(request, f'You do not have an active order')
+        return redirect('core:detail', slug=slug)
+
+
+@login_required # Не работает редирект для анонима. Исправить страницы авторизации?
+def remove_single_item_from_cart(request, slug):
+    item = get_object_or_404(Item, slug=slug)
+    order_qs = Order.objects.filter(user=request.user, ordered=False)
+    if order_qs.exists():
+        order = order_qs.first()  # заменить на order_qs[0], если не будет работать
+        if order.items.filter(item__slug=item.slug).exists():
+            order_item = order.items.filter(
+                item=item,
+                user=request.user,
+                ordered=False
+            )[0]
+            if order_item.quantity > 1:
+                order_item.quantity -= 1
+                order_item.save()
+            else:
+                order.items.remove(order_item)
+            messages.info(request, f'Product quantity updated')
+            return redirect('core:order-summary')
         else:
             messages.info(request, f'{item.title} was not in your cart')
             return redirect('core:detail', slug=slug)

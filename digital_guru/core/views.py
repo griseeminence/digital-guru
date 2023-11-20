@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, DetailView, View
@@ -8,7 +9,15 @@ from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 
 from .forms import CheckoutForm
-from .models import Item, OrderItem, Order, BillingAddress
+from .models import Item, OrderItem, Order, BillingAddress, Payment
+
+import stripe
+import stripe, logging
+
+stripe.api_key = 'sk_test_4eC39HqLyjWDarjtT1zdp7dc'
+
+
+# stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 class HomeListView(ListView):
@@ -17,7 +26,7 @@ class HomeListView(ListView):
     template_name = 'core/home.html'
 
 
-class OrderSummeryView(LoginRequiredMixin, View): # Не работает редирект для анонима. Исправить страницы авторизации?
+class OrderSummeryView(LoginRequiredMixin, View):  # Не работает редирект для анонима. Исправить страницы авторизации?
     def get(self, *args, **kwargs):
         try:
             order = Order.objects.get(user=self.request.user, ordered=False)
@@ -39,7 +48,7 @@ def products(request):
     context = {
         'items': Item.objects.all()
     }
-    return render(request, 'products.html', context)
+    return render(request, 'core/detail.html', context)
 
 
 class CheckoutView(View):
@@ -59,7 +68,7 @@ class CheckoutView(View):
                 apartment_address = form.cleaned_data.get('apartment_address')
                 country = form.cleaned_data.get('country')
                 zip = form.cleaned_data.get('zip')
-                #TODO: add functionality to this fields:
+                # TODO: add functionality to this fields:
                 # same_shipping_address = form.cleaned_data.get('same_shipping_address')
                 # save_info = form.cleaned_data.get('save_info')
                 payment_option = form.cleaned_data.get('payment_option')
@@ -73,22 +82,75 @@ class CheckoutView(View):
                 billing_address.save()
                 order.billing_address = billing_address
                 order.save()
-                #TODO: add redirect to selected payment method
-                print(form.cleaned_data)
-                print(f'form is valid')
-                return redirect('core:checkout')
-            messages.warning(self.request, f'form is invalid')
-            return redirect('core:checkout')
+
+                if payment_option == 'S':
+
+                    # TODO: add redirect to selected payment method
+                    print(form.cleaned_data)
+                    print(f'form is valid')
+                    return redirect('core:payment', payment_option='stripe')
+                elif payment_option == 'P':
+                    return redirect('core:payment', payment_option='paypal')
+                else:
+                    messages.warning(self.request, f'Invalid payment option: {payment_option}')
+                    return redirect('core:checkout')
+
         except ObjectDoesNotExist:
             messages.error(self.request, 'You have no orders')
             return redirect('core:order-summery')
 
 
-class PaymentView(View):
+class PaymentView(View):  # Проблема с получением данных по апи-токену.
     def get(self, *args, **kwargs):
-        return render(self.request, 'core/payment.html')
+        order = Order.objects.get(user=self.request.user, ordered=False)
+        context = {
+            'order': order
+        }
+        return render(self.request, 'core/payment.html', context)
 
-@login_required # Не работает редирект для анонима. Исправить страницы авторизации?
+    def post(self, *args, **kwargs):
+
+        token = self.request.POST.get('stripeToken')
+        order = Order.objects.get(user=self.request.user, ordered=False)
+        amount = order.get_total() * 100
+
+        try:
+            charge = stripe.Charge.create(
+                amount=amount,  # cents
+                currency='usd',
+                source=token
+            )
+
+            #       #create a payment
+            payment = Payment()
+            payment.stripe_charge_id = charge
+            payment.user = self.request.user
+            payment.amount = amount
+            payment.save()
+
+            # assign the payment
+            order.ordered = True
+            order.payment = payment
+            order.save()
+
+            messages.success(self.request, f'Your payment was successful')
+            return redirect('/')
+
+
+        except stripe.error.CardError as e:
+            logging.error("A payment error occurred: {}".format(e.user_message))
+            return redirect('/')
+        except stripe.error.InvalidRequestError:
+            logging.error("An invalid request occurred.")
+            return redirect('/')
+        except Exception:
+            logging.error("Another problem occurred, maybe unrelated to Stripe.")
+            return redirect('/')
+        else:
+            logging.info("No error.")
+
+
+@login_required  # Не работает редирект для анонима. Исправить страницы авторизации?
 def add_to_cart(request, slug):
     item = get_object_or_404(Item, slug=slug)
     order_item, created = OrderItem.objects.get_or_create(item=item, user=request.user, ordered=False)
@@ -112,7 +174,7 @@ def add_to_cart(request, slug):
         return redirect('core:order-summary')
 
 
-@login_required # Не работает редирект для анонима. Исправить страницы авторизации?
+@login_required  # Не работает редирект для анонима. Исправить страницы авторизации?
 def remove_from_cart(request, slug):
     item = get_object_or_404(Item, slug=slug)
     order_qs = Order.objects.filter(user=request.user, ordered=False)
@@ -135,7 +197,7 @@ def remove_from_cart(request, slug):
         return redirect('core:detail', slug=slug)
 
 
-@login_required # Не работает редирект для анонима. Исправить страницы авторизации?
+@login_required  # Не работает редирект для анонима. Исправить страницы авторизации?
 def remove_single_item_from_cart(request, slug):
     item = get_object_or_404(Item, slug=slug)
     order_qs = Order.objects.filter(user=request.user, ordered=False)

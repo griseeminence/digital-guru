@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'django_countries',
     'crispy_forms',
 ]
 
@@ -120,3 +121,4 @@ EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
+

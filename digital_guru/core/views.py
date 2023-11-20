@@ -84,7 +84,9 @@ class CheckoutView(View):
             return redirect('core:order-summery')
 
 
-
+class PaymentView(View):
+    def get(self, *args, **kwargs):
+        return render(self.request, 'core/payment.html')
 
 @login_required # Не работает редирект для анонима. Исправить страницы авторизации?
 def add_to_cart(request, slug):

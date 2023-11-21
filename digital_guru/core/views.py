@@ -10,14 +10,19 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from .forms import CheckoutForm, CouponForm
 from .models import Item, OrderItem, Order, BillingAddress, Payment, Coupon
-
+import random
+import string
 import stripe
 import stripe, logging
 
-stripe.api_key = 'sk_test_4eC39HqLyjWDarjtT1zdp7dc'
+stripe.api_key = 'sk_test_51OErHAJcQmjXF4uFyYmI3iOg6rzEYlpsf0RlVpp8iRWuiJQuOkbYVeOUqOPBDCiYHYOltHMhoe9U6ETPrUcibhpe00ZjFyWX1e'
 
 
 # stripe.api_key = settings.STRIPE_SECRET_KEY
+
+
+def create_ref_code():
+    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=20))
 
 
 class HomeListView(ListView):
@@ -149,6 +154,7 @@ class PaymentView(View):  # Проблема с получением данны�
             # assign the payment
             order.ordered = True
             order.payment = payment
+            order.ref_code = create_ref_code()
             order.save()
 
             messages.success(self.request, f'Your payment was successful')

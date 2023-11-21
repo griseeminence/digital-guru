@@ -22,11 +22,11 @@ class Item(models.Model):
     title = models.CharField(max_length=100)
     price = models.FloatField()
     discount_price = models.FloatField(blank=True, null=True)
-    category = models.CharField(max_length=100, choices=CATEGORY_CHOICES,
-                                default=None)  # Можно ли здесь None в дефолте?
+    category = models.CharField(max_length=100, choices=CATEGORY_CHOICES)  # Можно ли здесь None в дефолте?
     label = models.CharField(max_length=2, choices=LABEL_CHOICES, default='P')
-    slug = models.SlugField(max_length=100, default=None)  # Можно ли здесь None в дефолте?
+    slug = models.SlugField(max_length=100)  # Можно ли здесь None в дефолте?
     description = models.TextField(blank=True, null=True, default='This is a default description')
+    image = models.ImageField(blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -82,6 +82,7 @@ class Order(models.Model):
     ordered = models.BooleanField(default=False)
     billing_address = models.ForeignKey('BillingAddress', on_delete=models.SET_NULL, blank=True, null=True)
     payment = models.ForeignKey('Payment', on_delete=models.SET_NULL, blank=True, null=True)
+    coupon = models.ForeignKey('Coupon', on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
         return self.user.username
@@ -90,6 +91,7 @@ class Order(models.Model):
         total = 0
         for order_item in self.items.all():
             total += order_item.get_final_price()
+        total -= self.coupon.amount
         return total
 
 
@@ -103,6 +105,7 @@ class BillingAddress(models.Model):
     def __str__(self):
         return self.user.username
 
+
 class Payment(models.Model):
     stripe_charge_id = models.CharField(max_length=50)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True)
@@ -111,3 +114,11 @@ class Payment(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+class Coupon(models.Model):
+    code = models.CharField(max_length=50)
+    amount = models.FloatField(default=1)
+
+    def __str__(self):
+        return self.code

@@ -8,8 +8,8 @@ from django.utils import timezone
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 
-from .forms import CheckoutForm
-from .models import Item, OrderItem, Order, BillingAddress, Payment
+from .forms import CheckoutForm, CouponForm
+from .models import Item, OrderItem, Order, BillingAddress, Payment, Coupon
 
 import stripe
 import stripe, logging
@@ -53,11 +53,19 @@ def products(request):
 
 class CheckoutView(View):
     def get(self, *args, **kwargs):
-        form = CheckoutForm()
-        context = {
-            'form': form
-        }
-        return render(self.request, 'core/checkout.html', context)
+        try:
+            order = Order.objects.get(user=self.request.user, ordered=False)
+            form = CheckoutForm()
+            context = {
+                'form': form,
+                'couponform': CouponForm(),
+                'order': order,
+                'DISPLAY_COUPON_FORM': True,
+            }
+            return render(self.request, 'core/checkout.html', context)
+        except ObjectDoesNotExist:
+            messages.info(self.request, 'You have no orders')
+            return redirect('core:checkout')
 
     def post(self, *args, **kwargs):
         form = CheckoutForm(self.request.POST or None)
@@ -96,17 +104,22 @@ class CheckoutView(View):
                     return redirect('core:checkout')
 
         except ObjectDoesNotExist:
-            messages.error(self.request, 'You have no orders')
+            messages.warning(self.request, 'You have no orders')
             return redirect('core:order-summery')
 
 
 class PaymentView(View):  # Проблема с получением данных по апи-токену.
     def get(self, *args, **kwargs):
         order = Order.objects.get(user=self.request.user, ordered=False)
-        context = {
-            'order': order
-        }
-        return render(self.request, 'core/payment.html', context)
+        if order.billing_address:
+            context = {
+                'order': order,
+                'DISPLAY_COUPON_FORM': False,
+            }
+            return render(self.request, 'core/payment.html', context)
+        else:
+            messages.warning(self.request, 'You have no billing address')
+            return redirect('core:checkout')
 
     def post(self, *args, **kwargs):
 
@@ -127,6 +140,11 @@ class PaymentView(View):  # Проблема с получением данны�
             payment.user = self.request.user
             payment.amount = amount
             payment.save()
+
+            order_items = order.items.all()
+            order_items.update(ordered=True)
+            for item in order_items:
+                item.save()
 
             # assign the payment
             order.ordered = True
@@ -222,3 +240,28 @@ def remove_single_item_from_cart(request, slug):
     else:
         messages.info(request, f'You do not have an active order')
         return redirect('core:detail', slug=slug)
+
+
+def get_coupon(request, code):
+    try:
+        coupon = Coupon.objects.get(code=code)
+        return coupon
+    except ObjectDoesNotExist:
+        messages.info(request, 'This coupon does not exist')
+        return redirect('core:checkout')
+
+
+class AddCouponView(View):
+    def post(self, *args, **kwargs):
+        form = CouponForm(self.request.POST or None)
+        if form.is_valid():
+            try:
+                code = form.cleaned_data.get('code')
+                order = Order.objects.get(user=self.request.user, ordered=False)
+                order.coupon = get_coupon(self.request, code)
+                order.save()
+                messages.success(self.request, 'Successfully added coupon')
+                return redirect('core:checkout')
+            except ObjectDoesNotExist:
+                messages.info(self.request, 'You do not have an active order')
+                return redirect('core:checkout')

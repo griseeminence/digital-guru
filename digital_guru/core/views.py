@@ -8,8 +8,8 @@ from django.utils import timezone
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 
-from .forms import CheckoutForm, CouponForm
-from .models import Item, OrderItem, Order, BillingAddress, Payment, Coupon
+from .forms import CheckoutForm, CouponForm, RefundForm
+from .models import Item, OrderItem, Order, BillingAddress, Payment, Coupon, Refund
 import random
 import string
 import stripe
@@ -271,3 +271,30 @@ class AddCouponView(View):
             except ObjectDoesNotExist:
                 messages.info(self.request, 'You do not have an active order')
                 return redirect('core:checkout')
+
+
+class RequestRefundView(View):
+
+    def post(self, *args, **kwargs):
+        form = RefundForm(self.request.POST)
+        if form.is_valid():
+            ref_code = form.cleaned_data.get('ref_code')
+            message = form.cleaned_data.get('message')
+            email = form.cleaned_data.get('email')
+            try:
+                order = Order.objects.get(ref_code=ref_code)
+                order.refund_requested = True
+                order.save()
+
+                refund = Refund()
+                refund.order = order
+                refund.reason = message
+                refund.email = email
+                refund.save()
+                messages.success(self.request, 'Successfully requested refund')
+
+                return redirect('core:request-refund')g
+
+            except ObjectDoesNotExist:
+                message.info(self.request, 'You do not have an active order')
+                return redirect('core:request-refund')

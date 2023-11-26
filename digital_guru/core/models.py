@@ -132,6 +132,9 @@ class Address(models.Model):
     def __str__(self):
         return self.user.username
 
+    class Meta:
+        verbose_name_plural = 'Addresses'
+
 
 class Payment(models.Model):
     stripe_charge_id = models.CharField(max_length=50)

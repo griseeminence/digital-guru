@@ -2,116 +2,86 @@
 {% load crispy_forms_tags %}
 {% block content %}
 
-<!--Main layout-->
-<main>
-    <div class="container">
-        <!-- Heading -->
-        <h2 class="my-5 text-center">Checkout form</h2>
-
-        <!--Grid row-->
-        <div class="row">
-            <!--Grid column-->
-            <div class="col-md-8 mb-4">
-                <!--Card-->
-
-              <div class="card p-4">
-                <form method="POST" class="card-body">
-                {% csrf_token %}
-
-
-
-{#                    <form>#}
-{#                        {% csrf_token %}#}
-{#                        {{ form.as_p }}#}
-{#                        <button class="btn btn-primary" type="submit">Submit</button>#}
-{#                    </form>#}
-
-
-                    <!--address-->
-                    <p class="mb-0">
-                        Address
-                    </p>
-                    <div class="form-outline mb-4">
-                        {% comment %} <input type="email" class="form-control" placeholder="1234 Main St" aria-label="1234 Main St" aria-describedby="basic-addon1" />{% endcomment %}
-                        {{ form.street_address }}
-                    </div>
-
-                    <!--address-2-->
-                    <p class="mb-0">
-                        Address 2 (optional)
-                    </p>
-                    <div class="form-outline mb-4">
-                        {% comment %} <input type="email" class="form-control" placeholder="Apartment or suite" aria-label="Apartment or suite" aria-describedby="basic-addon1" />{% endcomment %}
-                        {{ form.apartment_address }}
-                    </div>
-                    <!--Grid row-->
-
-                    <div class="row">
-                        <!--Grid column-->
-                        <div class="col-lg-4 col-md-12 mb-4">
+    <main>
+        <div class="container">
+            <h2 class="my-5 text-center">Checkout form</h2>
+            <div class="row">
+                <div class="col-md-8 mb-4">
+                    <div class="card p-4">
+                        <form method="POST" class="card-body">
+                            {% csrf_token %}
+                            {#                    <form>#}
+                            {#                        {% csrf_token %}#}
+                            {#                        {{ form.as_p }}#}
+                            {#                        <button class="btn btn-primary" type="submit">Submit</button>#}
+                            {#                    </form>#}
                             <p class="mb-0">
-                                Country
+                                Address
                             </p>
-                            {% comment %}<div class="form-outline mb-4">
+                            <div class="form-outline mb-4">
+                                {% comment %} <input type="email" class="form-control" placeholder="1234 Main St" aria-label="1234 Main St" aria-describedby="basic-addon1" />{% endcomment %}
+                                {{ form.street_address }}
+                            </div>
+                            <p class="mb-0">
+                                Address 2 (optional)
+                            </p>
+                            <div class="form-outline mb-4">
+                                {% comment %} <input type="email" class="form-control" placeholder="Apartment or suite" aria-label="Apartment or suite" aria-describedby="basic-addon1" />{% endcomment %}
+                                {{ form.apartment_address }}
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-4 col-md-12 mb-4">
+                                    <p class="mb-0">
+                                        Country
+                                    </p>
+                                    {% comment %}<div class="form-outline mb-4">
                         <input type="email" class="form-control" placeholder="United States" aria-label="United States" aria-describedby="basic-addon1" />
                              </div>{% endcomment %}
-                            {{ form.country }}
-                        </div>
-                        <!--Grid column-->
-
-
-                        <!--Grid column-->
-                        <div class="col-lg-4 col-md-12 mb-4">
-                            <p class="mb-0">
-                                Zip
-                            </p>
-                            {% comment %}<div class="form-outline">
+                                    {{ form.country }}
+                                </div>
+                                <div class="col-lg-4 col-md-12 mb-4">
+                                    <p class="mb-0">
+                                        Zip
+                                    </p>
+                                    {% comment %}<div class="form-outline">
                                 <input type="text" class="form-control"/>{% endcomment %}
-                            {{ form.zip }}
+                                    {{ form.zip }}
+                                </div>
                             </div>
-                        </div>
-                        <!--Grid column-->
-
-
-                    <!--Grid row-->
-
-                    <hr />
-                    <div class="form-check">
-                        <input {% if form.same_shipping_address.value %} checked {% endif %} class="form-check-input" type="checkbox" name="same_shipping_address" value="" id="flexCheckDefault" />
-                        <label class="form-check-label" for="flexCheckDefault">Shipping address is the same as my billing address</label>
+                            <hr/>
+                            <div class="form-check">
+                                <input {% if form.same_shipping_address.value %} checked {% endif %}
+                                                                                 class="form-check-input"
+                                                                                 type="checkbox"
+                                                                                 name="same_shipping_address" value=""
+                                                                                 id="flexCheckDefault"/>
+                                <label class="form-check-label" for="flexCheckDefault">Shipping address is the same as
+                                    my billing address</label>
+                            </div>
+                            <div class="form-check">
+                                <input {% if form.save_info.value %} checked {% endif %} class="form-check-input"
+                                                                     type="checkbox" name="save_info" value=""
+                                                                     id="flexCheckDefault"/>
+                                <label class="form-check-label" for="flexCheckDefault">Save this information for next
+                                    time</label>
+                            </div>
+                            <hr/>
+                            <div class="d-block my-3">
+                                {% for value, name in form.fields.payment_option.choices %}
+                                    <div class="custom-control custom-radio">
+                                        <input id="{{ name }}" name="payment_option" value="{{ value }}" type="radio"
+                                               class="custom-control-input" required>
+                                        <label class="custom-control-label" for="{{ name }}">{{ name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <hr class="mb-4"/>
+                            <button class="btn btn-primary btn-lg btn-block" type="submit">Continue to checkout</button>
+                        </form>
                     </div>
-
-                    <div class="form-check">
-                        <input {% if form.save_info.value %} checked {% endif %} class="form-check-input" type="checkbox" name="save_info" value="" id="flexCheckDefault" />
-                        <label class="form-check-label" for="flexCheckDefault">Save this information for next time</label>
-
-                    </div>
-
-                    <hr />
-
-                  <div class="d-block my-3">
-                    {% for value, name in form.fields.payment_option.choices %}
-                    <div class="custom-control custom-radio">
-                      <input id="{{ name }}" name="payment_option" value="{{ value }}" type="radio" class="custom-control-input" required>
-                      <label class="custom-control-label" for="{{ name }}">{{ name }}</label>
-                    </div>
-                    {% endfor %}
-                  </div>
-
-
-                    <hr class="mb-4" />
-                  <button class="btn btn-primary btn-lg btn-block" type="submit">Continue to checkout</button>
-                </form>
+                </div>
+                {% include "core/order_snippet.html" %}
             </div>
-                <!--/.Card-->
-            </div>
-            <!--Grid column-->
-
-            {% include "core/order_snippet.html" %}
         </div>
-        <!--Grid row-->
-    </div>
-</main>
-<!--Main layout-->
-
+    </main>
 {% endblock %}

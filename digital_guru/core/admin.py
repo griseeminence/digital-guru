@@ -16,6 +16,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_display_links = [
         'user',
         'billing_address',
+        'shipping_address',
         'payment',
         'coupon',
     ]

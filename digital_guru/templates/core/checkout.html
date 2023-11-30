@@ -73,10 +73,12 @@
 
                             </div>
 
+                            {% if default_shipping_address %}
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" name="use_default_shipping" value="" id="use_default_shipping"/>
-                                <label class="form-check-label" for="use_default_shipping">Use default shipping address</label>
+                                <label class="form-check-label" for="use_default_shipping">Use default shipping address: {{ default_shipping_address.address|truncatechars:10 }}</label>
                             </div>
+                            {% endif %}
 
                             <hr/>
 
@@ -155,12 +157,14 @@
                                     time</label>
                             </div>
 
+                            {% if default_billing_address %}
 
 
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" name="use_default_billing" value="" id="use_default_billing"/>
-                                <label class="form-check-label" for="use_default_billing">Use default shipping address</label>
+                                <label class="form-check-label" for="use_default_billing">Use default shipping address: {{ default_billing_address.address|truncatechars:10 }}</label>
                             </div>
+                            {% endif %}
 
                             <hr/>
 

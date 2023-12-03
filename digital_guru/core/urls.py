@@ -1,7 +1,4 @@
-from django.conf import settings
-from django.conf.urls.static import static
-from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
 
 from .views import HomeListView, ItemDetailView, CheckoutView, add_to_cart, remove_from_cart, OrderSummeryView, \
     remove_single_item_from_cart, PaymentView, AddCouponView, RequestRefundView

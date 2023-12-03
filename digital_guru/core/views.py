@@ -1,5 +1,4 @@
 from django.contrib.auth.decorators import login_required
-from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, DetailView, View
@@ -12,7 +11,6 @@ from .forms import CheckoutForm, CouponForm, RefundForm
 from .models import Item, OrderItem, Order, Address, Payment, Coupon, Refund
 import random
 import string
-import stripe
 import stripe, logging
 
 stripe.api_key = 'sk_test_51OErHAJcQmjXF4uFyYmI3iOg6rzEYlpsf0RlVpp8iRWuiJQuOkbYVeOUqOPBDCiYHYOltHMhoe9U6ETPrUcibhpe00ZjFyWX1e'

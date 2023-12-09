@@ -52,3 +52,22 @@ class RefundForm(forms.Form):
         'row': 4
     }))
     email = forms.EmailField()
+
+
+#
+#
+# class CouponForm(forms.Form):
+#     code = forms.CharField(widget=forms.TextInput(attrs={
+#         'class': 'form-control w-100',
+#         'placeholder': 'Coupon Code',
+#         'aria-label': 'Recipient\'s username',
+#         'aria-describedby': 'basic-addon2',
+#     }))
+#
+#
+# class RefundForm(forms.Form):
+#     ref_code = forms.CharField()
+#     message = forms.CharField(widget=forms.Textarea(attrs={
+#         'row': 4
+#     }))
+#     email = forms.EmailField()

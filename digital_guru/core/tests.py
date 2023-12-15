@@ -119,7 +119,30 @@ class OrderSummaryViewTest(TestCase):
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'You have no orders')
 
+    def test_render_if_order_exists(self):
+        # Создаем заказ для пользователя
+        order = Order.objects.create(user=self.user, ordered=False)
 
+        # Создаем запрос GET
+        request = self.factory.get(reverse('order-summary'))
+
+        # Аутентифицируем пользователя в запросе
+        request.user = self.user
+
+        # Применяем middleware
+        self.middleware.process_request(request)
+
+        # Применяем middleware для обработки сообщений
+        response = self.view.get(request)
+
+        # Проверяем, что пользователь получает корректный ответ
+        self.assertEqual(response.status_code, 200)
+
+        # Проверяем, что используется правильный шаблон
+        self.assertTemplateUsed(response, 'core/order_summery.html')
+
+        # Проверяем, что объект заказа передается в контекст
+        self.assertEqual(response.context['object'], order)
 
 
 

@@ -1,12 +1,16 @@
 import unittest
+from unittest import TestCase
+
+from django.contrib.messages import get_messages
+from django.contrib.messages.middleware import MessageMiddleware
 from django.test import RequestFactory
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import QuerySet
 
-from core.models import Item
-from core.views import HomeListView
+from core.models import Item, Order
+from core.views import HomeListView, OrderSummeryView
 
 
 class HomeListViewTest(unittest.TestCase):
@@ -75,6 +79,28 @@ class HomeListViewTest(unittest.TestCase):
 
         # Убеждаемся, что количество элементов в QuerySet равно 5 (вторая страница)
         self.assertEqual(queryset.count(), 5)
+
+
+class OrderSummaryViewTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Создаем тестового пользователя для запросов
+        cls.user = User.objects.create_user(username='testuser', password='testpassword')
+
+    def setUp(self):
+        # Создаем экземпляр OrderSummaryView
+        self.view = OrderSummeryView()
+
+        # Создаем фабрику запросов Django
+        self.factory = RequestFactory()
+
+        # Создаем middleware для обработки сообщений
+        self.middleware = MessageMiddleware()
+
+    g
+
+
+
 
 if __name__ == '__main__':
     unittest.main()

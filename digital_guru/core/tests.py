@@ -57,7 +57,24 @@ class HomeListViewTest(unittest.TestCase):
         # Убеждаемся, что количество элементов в QuerySet равно 10
         self.assertEqual(queryset.count(), 10)
 
+    def test_pagination(self):
+        # Создаем запрос GET для второй страницы
+        request = self.factory.get(reverse('home'), {'page': 2})
 
+        # Аутентифицируем пользователя в запросе
+        request.user = self.user
+
+        # Получаем контекст представления
+        context = self.view.get_context_data(request=request)
+
+        # Получаем QuerySet из контекста
+        queryset = context['object_list']
+
+        # Убеждаемся, что это QuerySet
+        self.assertIsInstance(queryset, QuerySet)
+
+        # Убеждаемся, что количество элементов в QuerySet равно 5 (вторая страница)
+        self.assertEqual(queryset.count(), 5)
 
 if __name__ == '__main__':
     unittest.main()

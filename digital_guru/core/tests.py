@@ -97,7 +97,29 @@ class OrderSummaryViewTest(TestCase):
         # Создаем middleware для обработки сообщений
         self.middleware = MessageMiddleware()
 
-    g
+    def test_redirect_if_no_order(self):
+        # Создаем запрос GET
+        request = self.factory.get(reverse('order-summary'))
+
+        # Аутентифицируем пользователя в запросе
+        request.user = self.user
+
+        # Применяем middleware
+        self.middleware.process_request(request)
+
+        # Применяем middleware для обработки сообщений
+        response = self.view.get(request)
+
+        # Проверяем, что пользователь перенаправлен на 'core:home'
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('core:home'))
+
+        # Проверяем наличие сообщения об ошибке в запросе
+        messages = list(get_messages(request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'You have no orders')
+
+
 
 
 

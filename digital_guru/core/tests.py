@@ -69,6 +69,36 @@ class CheckoutViewTest(TestCase):
         self.assertIn('order', response.context)
         self.assertIn('DISPLAY_COUPON_FORM', response.context)
 
+        def test_post_success(self):
+            # Создаем заказ для пользователя
+            order = Order.objects.create(user=self.user, ordered=False)
+
+            # Создаем запрос POST
+            request_data = {
+                # Здесь передайте данные для успешной отправки формы
+                'use_default_shipping': True,
+                'use_default_billing': True,
+                'same_billing_address': True,
+                'payment_option': 'S',
+                # ...
+            }
+            request = self.factory.post(reverse('checkout'), data=request_data)
+
+            # Аутентифицируем пользователя в запросе
+            request.user = self.user
+
+            # Применяем middleware
+            self.middleware.process_request(request)
+
+            # Применяем middleware для обработки сообщений
+            response = self.view.post(request)
+
+            # Проверяем, что пользователь перенаправлен на правильный URL
+            self.assertEqual(response.status_code, 302)
+            self.assertRedirects(response,
+                                 reverse('core:payment', kwargs={'payment_option': 'stripe'}))  # Замените на свой URL
+
+            # Здесь можете добавить дополнительные проверки в соответствии с вашей логикой
 
 class HomeListViewTest(unittest.TestCase):
     @classmethod

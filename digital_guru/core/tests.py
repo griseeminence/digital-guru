@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import QuerySet
 
+from core.forms import CheckoutForm
 from core.models import Item, Order
 from core.views import HomeListView, OrderSummeryView
 
@@ -36,6 +37,37 @@ class CheckoutViewTest(TestCase):
 
         # Создаем middleware для обработки сообщений
         self.middleware = MessageMiddleware()
+
+    def test_get_success(self):
+        # Создаем заказ для пользователя
+        order = Order.objects.create(user=self.user, ordered=False)
+
+        # Создаем запрос GET
+        request = self.factory.get(reverse('checkout'))
+
+        # Аутентифицируем пользователя в запросе
+        request.user = self.user
+
+        # Применяем middleware
+        self.middleware.process_request(request)
+
+        # Применяем middleware для обработки сообщений
+        response = self.view.get(request)
+
+        # Проверяем, что пользователь получает корректный ответ
+        self.assertEqual(response.status_code, 200)
+
+        # Проверяем, что используется правильный шаблон
+        self.assertTemplateUsed(response, 'core/checkout.html')
+
+        # Проверяем наличие формы в контексте
+        self.assertIn('form', response.context)
+        self.assertIsInstance(response.context['form'], CheckoutForm)  # Заменить
+
+        # Проверяем наличие других элементов в контексте
+        self.assertIn('couponform', response.context)
+        self.assertIn('order', response.context)
+        self.assertIn('DISPLAY_COUPON_FORM', response.context)
 
 
 class HomeListViewTest(unittest.TestCase):

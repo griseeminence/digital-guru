@@ -13,6 +13,31 @@ from core.models import Item, Order
 from core.views import HomeListView, OrderSummeryView
 
 
+import unittest
+from django.test import RequestFactory, TestCase
+from django.contrib.auth.models import User
+from django.shortcuts import reverse, render, redirect
+from django.contrib.messages.middleware import MessageMiddleware
+from .models import Order, Address
+from .views import CheckoutView
+
+class CheckoutViewTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Создаем тестового пользователя для запросов
+        cls.user = User.objects.create_user(username='testuser', password='testpassword')
+
+    def setUp(self):
+        # Создаем экземпляр CheckoutView
+        self.view = CheckoutView()
+
+        # Создаем фабрику запросов Django
+        self.factory = RequestFactory()
+
+        # Создаем middleware для обработки сообщений
+        self.middleware = MessageMiddleware()
+
+
 class HomeListViewTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

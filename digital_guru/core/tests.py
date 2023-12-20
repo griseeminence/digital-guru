@@ -10,7 +10,7 @@ from django.core.paginator import Paginator
 from django.db.models import QuerySet
 
 from core.forms import CheckoutForm
-from core.models import Item, Order
+from core.models import Item, Order, OrderItem
 from core.views import HomeListView, OrderSummeryView
 
 
@@ -236,3 +236,25 @@ class OrderSummaryViewTest(TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class AddToCartViewTest(TestCase):
+    def setUp(self):
+        self.client = User()
+        self.user = User.objects.create_user(username='testuser', password='testpassword')
+        self.item = Item.objects.create(title='Test Item', slug='test-item', price=10.0)
+
+    def test_add_to_cart_authenticated_user(self):
+        self.client.login(username='testuser', password='testpassword')
+        response = self.client.post(reverse('add_to_cart', args=[self.item.slug]))
+
+        self.assertEqual(response.status_code, 302)  # Expecting a redirect
+        self.assertRedirects(response, reverse('core:order-summary'))
+
+        order_item = OrderItem.objects.get(item=self.item, user=self.user, ordered=False)
+        self.assertEqual(order_item.quantity, 1)
+
+        # Check if the message is displayed
+        messages = [str(message) for message in get_messages(response.wsgi_request)]
+        self.assertIn(f'Test Item was added to your cart', messages)
+

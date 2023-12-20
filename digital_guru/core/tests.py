@@ -258,3 +258,24 @@ class AddToCartViewTest(TestCase):
         messages = [str(message) for message in get_messages(response.wsgi_request)]
         self.assertIn(f'Test Item was added to your cart', messages)
 
+    def test_add_to_cart_unauthenticated_user(self):
+        response = self.client.post(reverse('add_to_cart', args=[self.item.slug]))
+
+        self.assertEqual(response.status_code, 302)  # Expecting a redirect
+        self.assertRedirects(response, reverse('login') + f'?next={reverse("add_to_cart", args=[self.item.slug])}')
+
+    def test_add_to_cart_existing_order_item(self):
+        self.client.login(username='testuser', password='testpassword')
+        order = Order.objects.create(user=self.user, ordered_date=timezone.now())
+        order_item = OrderItem.objects.create(item=self.item, user=self.user, ordered=False, quantity=2)
+        order.items.add(order_item)
+
+        response = self.client.post(reverse('add_to_cart', args=[self.item.slug]))
+
+        self.assertEqual(response.status_code, 302)  # Expecting a redirect
+        self.assertRedirects(response, reverse('core:order-summary'))
+
+        order_item.refresh_from_db()
+        self.assertEqual(order_item.quantity, 3)  # Quantity should be increased by 1
+
+

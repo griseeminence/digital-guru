@@ -278,4 +278,16 @@ class AddToCartViewTest(TestCase):
         order_item.refresh_from_db()
         self.assertEqual(order_item.quantity, 3)  # Quantity should be increased by 1
 
+    def test_add_to_cart_new_order(self):
+        self.client.login(username='testuser', password='testpassword')
 
+        response = self.client.post(reverse('add_to_cart', args=[self.item.slug]))
+
+        self.assertEqual(response.status_code, 302)  # Expecting a redirect
+        self.assertRedirects(response, reverse('core:order-summary'))
+
+        order_item = OrderItem.objects.get(item=self.item, user=self.user, ordered=False)
+        self.assertEqual(order_item.quantity, 1)
+
+        order = Order.objects.get(user=self.user, ordered=False)
+        self.assertIn(order_item, order.items.all())

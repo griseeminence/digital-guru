@@ -1,12 +1,7 @@
-import unittest
-from unittest import TestCase
+
 
 from django.contrib.messages import get_messages
-from django.contrib.messages.middleware import MessageMiddleware
-from django.test import RequestFactory
-from django.urls import reverse
-from django.contrib.auth.models import User
-from django.core.paginator import Paginator
+
 from django.db.models import QuerySet
 
 from core.forms import CheckoutForm

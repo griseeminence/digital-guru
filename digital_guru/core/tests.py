@@ -286,3 +286,62 @@ class AddToCartViewTest(TestCase):
 
         order = Order.objects.get(user=self.user, ordered=False)
         self.assertIn(order_item, order.items.all())
+
+
+class RequestRefundViewTest(TestCase):
+    def setUp(self):
+        # Создаем пользователя и заказ для тестирования
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.order = Order.objects.create(user=self.user, ref_code='123456', total=100.00)
+
+    def test_get_request_refund_view(self):
+        # Проверяем, что GET запрос возвращает код 200
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('core:request-refund'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'core/request_refund.html')
+        self.assertIsInstance(response.context['form'], RefundForm)
+
+    def test_post_request_refund_view_success(self):
+        # Проверяем успешный POST запрос на возврат
+        self.client.force_login(self.user)
+        data = {
+            'ref_code': '123456',
+            'message': 'Test refund message',
+            'email': 'test@example.com',
+        }
+        response = self.client.post(reverse('core:request-refund'), data)
+        self.assertEqual(response.status_code, 302)  # Перенаправление после успешного запроса
+        self.assertRedirects(response, reverse('core:request-refund'))
+
+        # Проверяем, что заказ помечен как запрошенный на возврат
+        self.order.refresh_from_db()
+        self.assertTrue(self.order.refund_requested)
+
+        # Проверяем создание объекта Refund
+        self.assertEqual(Refund.objects.count(), 1)
+        refund = Refund.objects.first()
+        self.assertEqual(refund.order, self.order)
+        self.assertEqual(refund.reason, 'Test refund message')
+        self.assertEqual(refund.email, 'test@example.com')
+
+        # Проверяем наличие сообщения об успешном запросе возврата
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'Successfully requested refund')
+
+    def test_post_request_refund_view_no_active_order(self):
+        # Проверяем POST запрос с несуществующим ref_code
+        self.client.force_login(self.user)
+        data = {
+            'ref_code': 'invalid_ref_code',
+            'message': 'Test refund message',
+            'email': 'test@example.com',
+        }
+        response = self.client.post(reverse('core:request-refund'), data)
+        self.assertEqual(response.status_code, 302)  # Перенаправление после запроса
+
+        # Проверяем, что пользователя информируют о отсутствии активного заказа
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'You do not have an active order')
